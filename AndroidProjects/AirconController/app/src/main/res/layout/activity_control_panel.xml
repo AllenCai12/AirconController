@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    tools:context="com.devilwwj.loginandregister.ControlPanel.ControlPanelActivity">
+
+    <TextView
+        android:id="@+id/device_name_text_view"
+        android:layout_marginTop="20dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="30sp"
+        android:text="DeviceName"
+        />
+    <ImageView
+        android:id="@+id/divider_line_image"
+        android:layout_width="fill_parent"
+        android:layout_height="1dp"
+        android:layout_below="@+id/device_name_text_view"
+        android:background="#000000"/>
+
+    <RelativeLayout
+        android:id="@+id/aircon_first_layout"
+        android:layout_below="@+id/divider_line_image"
+        android:layout_marginTop="40dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+    <TextView
+        android:id="@+id/env_temp_view"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="24sp"
+        android:text="@string/EnvTemperature"
+        />
+    <TextView
+        android:id="@+id/temp_number_view"
+        android:layout_marginLeft="10dp"
+        android:layout_toRightOf="@+id/env_temp_view"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="24dp"
+        android:text="20℃"
+        />
+
+    <TextView
+        android:id="@+id/aircon_switch_view"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginRight="10dp"
+        android:layout_marginLeft="30dp"
+        android:layout_toRightOf="@+id/temp_number_view"
+        android:text="@string/AirconSwitch"
+        android:textSize="24sp"
+        />
+    <Switch
+        android:id="@+id/aircon_switch"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="10dp"
+        android:layout_toRightOf="@+id/aircon_switch_view"
+        />
+
+    </RelativeLayout>
+
+
+    <RelativeLayout
+        android:id="@+id/aircon_second_layout"
+        android:layout_below="@+id/aircon_first_layout"
+        android:layout_marginTop="20dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+    <TextView
+        android:id="@+id/temp_setting_view"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="24sp"
+        android:text="@string/TempSetting"
+        />
+     <TextView
+         android:id="@+id/temp_setting_number"
+         android:layout_width="wrap_content"
+         android:layout_height="wrap_content"
+         android:layout_toRightOf="@+id/temp_setting_view"
+         android:layout_marginLeft="10dp"
+         android:textSize="24sp"
+         android:text="12℃"
+         />
+     </RelativeLayout>
+
+    <SeekBar
+        android:id="@+id/temp_setting_bar"
+        android:layout_below="@+id/aircon_second_layout"
+        android:scrollbarSize="10dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
+
+    <RelativeLayout
+        android:id="@+id/aircon_third_layout"
+        android:layout_marginTop="20dp"
+        android:layout_below="@+id/temp_setting_bar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+    <TextView
+        android:id="@+id/mode_setting_view"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="24sp"
+        android:text="@string/AirconMode"
+        />
+
+    <Spinner
+        android:id="@+id/mode_setting_spinner"
+        android:layout_toRightOf="@id/mode_setting_view"
+        android:layout_marginLeft="10dp"
+        android:entries="@array/mode_list"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
+    </Spinner>
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:id="@+id/aircon_forth_layout"
+        android:layout_marginTop="20dp"
+        android:layout_below="@+id/aircon_third_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <TextView
+            android:id="@+id/wind_speed_view"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="24sp"
+            android:text="@string/WindSpeed"
+            />
+
+        <Spinner
+            android:id="@+id/wind_speed_spinner"
+            android:layout_toRightOf="@id/wind_speed_view"
+            android:layout_marginLeft="10dp"
+            android:entries="@array/wind_speed_list"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+        </Spinner>
+    </RelativeLayout>
+
+</RelativeLayout>
+    <!--android:text="@string/EnvTemperature"-->

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="mode_list">
+        <item>自动</item>
+        <item>制冷</item>
+        <item>制热</item>
+        <item>送风</item>
+    </string-array>
+
+    <string-array name="wind_speed_list">
+        <item>低</item>
+        <item>中</item>
+        <item>高</item>
+    </string-array>
+
+</resources>

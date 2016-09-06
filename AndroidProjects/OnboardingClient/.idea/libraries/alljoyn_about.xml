@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="alljoyn_about">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/app/src/main/jniLibs/armeabi/alljoyn_about.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

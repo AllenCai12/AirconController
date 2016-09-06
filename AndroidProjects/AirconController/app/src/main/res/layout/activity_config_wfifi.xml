@@ -1,0 +1,64 @@
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:id="@+id/config_wifi_layout"
+              android:layout_marginTop="60dp"
+              android:focusable="true"
+              android:focusableInTouchMode="true"
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content"
+              android:orientation="vertical">
+    <ImageView
+        android:contentDescription="@string/wifi_image"
+        android:src="@drawable/wifi_show"
+        android:layout_gravity="center"
+        android:layout_width="120dp"
+        android:layout_height="120dp"/>
+
+    <EditText
+        android:id="@+id/select_wifi"
+        android:hint="@string/select_wifi"
+        android:textSize="20sp"
+        android:layout_marginLeft="60dp"
+        android:layout_marginTop="60dp"
+        android:layout_marginRight="60dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:drawablePadding="12dp"
+        android:drawableRight="@drawable/ic_down_list_name"
+        android:drawableEnd="@drawable/ic_down_list_name"
+        android:height="40dip" />
+
+    <!--android:drawableRight="@drawable/ic_pulldown_action_name"-->
+    <!--style="@style/login_edit_style"-->
+    <!--style="@style/login_edit_style"-->
+    <EditText
+        android:id="@+id/pass_input"
+        android:hint="@string/input_pass"
+        android:textSize="20sp"
+        android:layout_marginLeft="60dp"
+        android:layout_marginRight="60dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
+    <CheckBox
+        android:id="@+id/remember_pwd"
+        android:layout_marginStart="72dp"
+        android:layout_marginLeft="72dp"
+        android:text="@string/remember_password"
+        android:onClick="onClick"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"/>
+
+    <Button
+        android:id="@+id/btn_login"
+        android:layout_gravity="center"
+        android:layout_height="wrap_content"
+        android:layout_width="wrap_content"
+        android:layout_marginTop="30dp"
+        android:background="@drawable/btn_login_selector"
+        android:onClick="onClick"
+        android:text="@string/connect_wifi"
+        android:textColor="#5c5c5c"
+        android:textSize="16sp" />
+
+
+</LinearLayout>

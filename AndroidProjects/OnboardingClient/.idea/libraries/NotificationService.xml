@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="NotificationService">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/app/src/main/jniLibs/armeabi/NotificationService.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
