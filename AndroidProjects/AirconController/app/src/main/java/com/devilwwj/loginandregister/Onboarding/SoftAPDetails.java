@@ -17,6 +17,7 @@
 package com.devilwwj.loginandregister.Onboarding;
 
 import org.alljoyn.bus.AboutObjectDescription;
+import org.alljoyn.bus.BusAttachment;
 
 import java.util.Iterator;
 import java.util.Map;
@@ -71,6 +72,8 @@ public class SoftAPDetails
 
    public String configLanguage = "";
 
+    public BusAttachment m_bus;
+
     // ===================================================================
 
     /**
@@ -91,10 +94,11 @@ public class SoftAPDetails
      * @param password
      *            The device password
      */
-    public SoftAPDetails(String appId, String busName, String deviceFriendlyName, short port, AboutObjectDescription[] objectDescriptions, Map<String, Object> aboutMap,
+    public SoftAPDetails(BusAttachment bus, String appId, String busName, String deviceFriendlyName, short port, AboutObjectDescription[] objectDescriptions, Map<String, Object> aboutMap,
                          char[] password)
     {
 
+        this.m_bus = bus;
         this.appId = appId;
         this.busName = busName;
         this.deviceFriendlyName = deviceFriendlyName;

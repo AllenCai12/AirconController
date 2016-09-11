@@ -33,12 +33,17 @@ import android.util.Log;
 import android.widget.Toast;
 
 import com.devilwwj.loginandregister.R;
+import com.devilwwj.loginandregister.login.utils.LogUtils;
 
 import org.alljoyn.about.AboutKeys;
 import org.alljoyn.bus.AboutListener;
 import org.alljoyn.bus.AboutObjectDescription;
 import org.alljoyn.bus.BusAttachment;
 import org.alljoyn.bus.BusException;
+import org.alljoyn.bus.BusListener;
+import org.alljoyn.bus.Mutable;
+import org.alljoyn.bus.ProxyBusObject;
+import org.alljoyn.bus.SessionListener;
 import org.alljoyn.bus.SessionOpts;
 import org.alljoyn.bus.Status;
 import org.alljoyn.bus.Variant;
@@ -71,7 +76,7 @@ import java.util.Map;
  * onboarding service methods. (get the scan information, do onboarding,
  * offboarding etc.)
  */
-public class OnboardingApplication extends Application implements AuthPasswordHandler, AboutListener{
+public class OnboardingApplication extends Application implements AuthPasswordHandler, AboutListener {
 
     public static final String TAG = "OnboardingClient";
     public static final String TAG_PASSWORD = "OnboardingApplication_password";
@@ -85,13 +90,16 @@ public class OnboardingApplication extends Application implements AuthPasswordHa
     private ConfigService configService;
     private ConfigClient configClient;
 
+    Mutable.IntegerValue m_sessionId;
+    private ProxyBusObject m_proxyObj;
+    private AirconInterface m_airconInterface;
+    private static final short CONTACT_PORT=42;
     /**
      * The daemon should advertise itself "quietly" (directly to the calling
      * port) This is to reply directly to a TC looking for a daemon
      */
     private static final String DAEMON_QUIET_PREFIX = "quiet@";
-    private static final String[] ANNOUNCEMENT_IFACES = new String[] { ConfigTransport.INTERFACE_NAME,
-                                                                        AirconInterface.INTERFACE_NAME};
+    private static final String[] ANNOUNCEMENT_IFACES = new String[]{ConfigTransport.INTERFACE_NAME,AirconInterface.INTERFACE_NAME};
     private final GenericLogger m_logger = new GenericLogger() {
         @Override
         public void debug(String TAG, String msg) {
@@ -153,7 +161,6 @@ public class OnboardingApplication extends Application implements AuthPasswordHa
 
         // Receiver
         m_receiver = new BroadcastReceiver() {
-
             @Override
             public void onReceive(Context context, Intent intent) {
 
@@ -177,7 +184,6 @@ public class OnboardingApplication extends Application implements AuthPasswordHa
         IntentFilter filter = new IntentFilter();
         filter.addAction(WifiManager.NETWORK_STATE_CHANGED_ACTION);
         registerReceiver(m_receiver, filter);
-
     }
 
     // ======================================================================
@@ -191,20 +197,20 @@ public class OnboardingApplication extends Application implements AuthPasswordHa
     }
 
     // ======================================================================
+
     /**
-     * @param msg
-     *            Given a msg, create and display a toast on the screen.
+     * @param msg Given a msg, create and display a toast on the screen.
      */
     public void makeToast(String msg) {
         Toast.makeText(this, msg, Toast.LENGTH_LONG).show();
     }
 
     // ======================================================================
+
     /**
      * Sets the daemon realm name.
-     * 
-     * @param realmName
-     *            The daemon realm name.
+     *
+     * @param realmName The daemon realm name.
      */
     public void setRealmName(String realmName) {
         m_realmName = realmName;
@@ -221,6 +227,86 @@ public class OnboardingApplication extends Application implements AuthPasswordHa
         super.onTerminate();
         unregisterReceiver(m_receiver);
     }
+    public void doConnectTest(){
+
+        /* All communication through AllJoyn begins with a BusAttachment. */
+        boolean b = DaemonInit.PrepareDaemon(getApplicationContext());
+        System.out.println(b);
+        String ss = getPackageName();
+        m_Bus = new BusAttachment(ss, BusAttachment.RemoteMessage.Receive);
+        try {
+            m_Bus.registerBusListener(new BusListener() {
+                @Override
+                public void foundAdvertisedName(String name,
+                                                short transport,
+                                                String namePrefix) {
+                    try {
+
+                        Log.d("++++++++", "======before joinSession====");
+//                        AirconInterface.replyMsg m_msg;
+                        m_Bus.enableConcurrentCallbacks();
+
+                        ProxyBusObject airconProxyObject;
+                        SessionOpts sessionOpts = new SessionOpts();
+                        sessionOpts.traffic = SessionOpts.TRAFFIC_MESSAGES;
+                        sessionOpts.isMultipoint = false;
+                        sessionOpts.proximity = SessionOpts.PROXIMITY_ANY;
+                        sessionOpts.transports = SessionOpts.TRANSPORT_ANY;
+
+                        m_sessionId = new Mutable.IntegerValue();
+
+                        Log.d("++++++++", "======before joinSession====");
+                        m_Bus.joinSession(name, CONTACT_PORT, m_sessionId, sessionOpts, new SessionListener());
+                        airconProxyObject = m_Bus.getProxyBusObject(AirconInterface.INTERFACE_NAME, AirconInterface.OBJ_PATH, m_sessionId.value, new Class[]{AirconInterface.class});
+                        if(airconProxyObject == null)
+                        {
+                            Log.d("ERROR", " proxyObject==================");
+                        }
+                        else{
+                            m_airconInterface  = airconProxyObject.getInterface(AirconInterface.class);
+
+                            if(m_airconInterface == null)
+                            {
+                                Log.d("ERROR", "===========airconInterface=======");
+                            }
+                            else {
+                                Log.d("++++++++", "======after joinSession====");
+
+/*                                m_msg = m_airconInterface.GetAllAirconIDs();
+                                Log.d("++++++++", "======after====");
+                                for (String tmp : m_msg.airconID) {
+                                    Log.d("======", tmp + "  ======");
+                                }*/
+                            }
+
+                        }
+                        // startAirconSession(name, transport, namePrefix);
+                    }catch(Exception e)
+                    {
+                        e.printStackTrace();
+                    }
+
+                }
+            });
+
+        }catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+        Status status = m_Bus.connect();
+        Log.d(TAG, "bus.connect status: " + status);
+
+        status = m_Bus.findAdvertisedName(AirconInterface.INTERFACE_NAME);
+        if (status != Status.OK) {
+            Log.d("ERROR", "=====findAdverTiseName ===========");
+
+        }
+        else
+        {
+            Log.d("OK", "===========findAdvertiseName===status==="+String.valueOf(status));
+        }
+
+    }
 
     // ======================================================================
 
@@ -234,6 +320,7 @@ public class OnboardingApplication extends Application implements AuthPasswordHa
         System.out.println(b);
         String ss = getPackageName();
         m_Bus = new BusAttachment(ss, BusAttachment.RemoteMessage.Receive);
+
         Status status = m_Bus.connect();
         Log.d(TAG, "bus.connect status: " + status);
 
@@ -241,16 +328,16 @@ public class OnboardingApplication extends Application implements AuthPasswordHa
         m_Bus.setDaemonDebug("ALL", 7);
         m_Bus.setLogLevels("ALL=7");
         m_Bus.useOSLogging(true);
+
+
         try {
             m_Bus.registerAboutListener(this);
             m_Bus.whoImplements(ANNOUNCEMENT_IFACES);
             configService = ConfigServiceImpl.getInstance();
             configService.startConfigClient(m_Bus);
 
-        }catch (Exception e)
-        {
-            e.printStackTrace();;
-
+        } catch (Exception e) {
+            e.printStackTrace();
         }
 
         String keyStoreFileName = null;
@@ -274,7 +361,7 @@ public class OnboardingApplication extends Application implements AuthPasswordHa
         // set keyListener
         keyStoreFileName = getApplicationContext().getFileStreamPath("alljoyn_keystore").getAbsolutePath();
         if (keyStoreFileName != null && keyStoreFileName.length() > 0) {
-            SrpAnonymousKeyListener authListener = new SrpAnonymousKeyListener(OnboardingApplication.this, m_logger, new String[] { "ALLJOYN_SRP_KEYX", "ALLJOYN_ECDHE_PSK", "ALLJOYN_PIN_KEYX" });
+            SrpAnonymousKeyListener authListener = new SrpAnonymousKeyListener(OnboardingApplication.this, m_logger, new String[]{"ALLJOYN_SRP_KEYX", "ALLJOYN_ECDHE_PSK", "ALLJOYN_PIN_KEYX"});
             Status authStatus = m_Bus.registerAuthListener(authListener.getAuthMechanismsAsString(), authListener, keyStoreFileName);
             m_logger.debug(TAG, "BusAttachment.registerAuthListener status = " + authStatus);
             if (authStatus != Status.OK) {
@@ -283,7 +370,7 @@ public class OnboardingApplication extends Application implements AuthPasswordHa
         }
 
         m_Bus.registerAboutListener(this);
-        m_Bus.whoImplements(new String[] { OnboardingTransport.INTERFACE_NAME });
+        m_Bus.whoImplements(new String[]{OnboardingTransport.INTERFACE_NAME});
     }
 
     @Override
@@ -295,7 +382,7 @@ public class OnboardingApplication extends Application implements AuthPasswordHa
             String deviceFriendlyName = (String) newMap.get(AboutKeys.ABOUT_DEVICE_NAME);
             String defaultLanguage = (String) newMap.get(AboutKeys.ABOUT_DEFAULT_LANGUAGE);
             m_logger.debug(TAG, "onAnnouncement received: with parameters: busName:" + busName + ", port:" + port + ", deviceid" + deviceId + ", deviceName:" + deviceFriendlyName);
-            addDevice(deviceId, busName, port, deviceFriendlyName, defaultLanguage,objectDescriptions, newMap);
+            addDevice(deviceId, busName, port, deviceFriendlyName, defaultLanguage, objectDescriptions, newMap);
 
         } catch (BusException e) {
             e.printStackTrace();
@@ -303,6 +390,7 @@ public class OnboardingApplication extends Application implements AuthPasswordHa
     }
 
     // ======================================================================
+
     /**
      * Disconnect from Alljoyn bus and unregister bus objects.
      */
@@ -313,7 +401,7 @@ public class OnboardingApplication extends Application implements AuthPasswordHa
          */
         try {
             if (m_Bus != null) {
-                m_Bus.cancelWhoImplements(new String[] { OnboardingTransport.INTERFACE_NAME });
+                m_Bus.cancelWhoImplements(new String[]{OnboardingTransport.INTERFACE_NAME});
                 m_Bus.unregisterAboutListener(this);
                 m_Bus.clearKeyStore();
                 m_logger.info(TAG_PASSWORD, "Bus attachment clear key store");
@@ -335,7 +423,7 @@ public class OnboardingApplication extends Application implements AuthPasswordHa
         SoftAPDetails oldDevice = m_devicesMap.get(deviceId);
 
         if (oldDevice != null) {// device already exist. update the fields that
-                                // might have changed.
+            // might have changed.
             if (!oldDevice.busName.equals(busName)) {
                 // In case the bus name changed, the password should be reset
                 oldDevice.password = SrpAnonymousKeyListener.DEFAULT_PINCODE;
@@ -353,7 +441,7 @@ public class OnboardingApplication extends Application implements AuthPasswordHa
 
         } else {
             // add the device to the map
-            SoftAPDetails sad = new SoftAPDetails(deviceId, busName, deviceFriendlyName, port, objectDescriptions, aboutMap, SrpAnonymousKeyListener.DEFAULT_PINCODE);
+            SoftAPDetails sad = new SoftAPDetails(m_Bus, deviceId, busName, deviceFriendlyName, port, objectDescriptions, aboutMap, SrpAnonymousKeyListener.DEFAULT_PINCODE);
             m_devicesMap.put(deviceId, sad);
         }
         // notify the activity to come and get it
@@ -362,6 +450,67 @@ public class OnboardingApplication extends Application implements AuthPasswordHa
         extras.putString(Keys.Extras.EXTRA_DEVICE_ID, deviceId);
         intent.putExtras(extras);
         sendBroadcast(intent);
+    }
+
+/*
+    essionId = new Mutable.IntegerValue();
+    busAttachment.enableConcurrentCallbacks();
+    busAttachment.joinSession(busName, port, sessionId, createSessionOptions(), new SessionListener());
+    busAttachment.getProxyBusObject(busName, "/net/allplay/MediaPlayer", sessionId.value,
+            new Class<?>[] { MediaPlayerInterface.class });
+    mediaPlayerInterface = allPlayObject.getInterface(MediaPlayerInterface.class);
+    busHandler.getBusAttachement().registerSignalHandlers(new MediaPlayerSignalHandler());
+*/
+
+
+    public ProxyBusObject getProxyObject(SoftAPDetails peer) throws Exception {
+
+
+        ProxyBusObject airconProxyObject;
+        SessionOpts sessionOpts = new SessionOpts();
+        Status status;
+
+        m_sessionId = new Mutable.IntegerValue();
+
+        Log.d("++++++++", "======before joinSession====");
+        status = m_Bus.joinSession(peer.busName, peer.port, m_sessionId, sessionOpts, new SessionListener());
+
+        if(status != Status.OK || status == Status.ALLJOYN_JOINSESSION_REPLY_ALREADY_JOINED)
+        {
+            LogUtils.d("Faile", "================join========faile==");
+        }
+
+        airconProxyObject = m_Bus.getProxyBusObject(peer.busName, AirconInterface.OBJ_PATH, m_sessionId.value, new Class[]{AirconInterface.class});
+        return  airconProxyObject;
+
+
+/*
+        m_airconInterface  = airconProxyObject.getInterface(AirconInterface.class);
+        int respondCode;
+
+        // m_msg = new AirconInterface.replyMsg();
+
+        String[] tmpStr= new String[4];
+
+        Log.d("++++++++", "======before12====");
+        //version = m_airconInterface.GetControllerServiceVersion();
+
+//                m_airconInterface.GetAllAirconIDs();
+//                m_airconInterface.GetAllAirconID();
+        try {
+            tmpStr =  m_airconInterface.GetAllAirconIDs().airconID;
+//                    m_airconInterface.GetAirconName("1","en");
+        }catch (Exception e){
+            e.printStackTrace();
+            Log.d("remoteMethod", "==========");
+        }
+
+        Log.d("++++++++", "======after====");
+
+        for (String tmp : tmpStr) {
+            Log.d("=sdfsdf=====", tmp + "  ======");
+        }*/
+
     }
 
     /**
@@ -392,6 +541,7 @@ public class OnboardingApplication extends Application implements AuthPasswordHa
         }
         // Need to create a new configClient
         else {
+
             try {
 
                 // Try to close the previous connection, if exists
@@ -405,6 +555,7 @@ public class OnboardingApplication extends Application implements AuthPasswordHa
                 updateTheUiAboutError("startSession: Exception: " + m);
                 throw e;
             }
+
         }
 
         // Instead of checking the returned status, we check the isConnected()
@@ -470,12 +621,12 @@ public class OnboardingApplication extends Application implements AuthPasswordHa
         Map<String, Object> configMap = null;
         if (deviceId == null) {
             updateTheUiAboutError(getString(R.string.no_peer_seleted));
-            return configMap;
+            return null;
         }
         SoftAPDetails device = getDevice(deviceId);
         if (device == null) {
             updateTheUiAboutError(getString(R.string.no_device_available));
-            return configMap;
+            return null;
         }
         try {
             startConfigSession(device);
