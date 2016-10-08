@@ -1,4 +1,4 @@
-package com.devilwwj.loginandregister.Onboarding.ConfigWifi;
+package com.EMA.AirconControl.Onboarding.ConfigWifi;
 
 import android.app.ListActivity;
 import android.app.ProgressDialog;
@@ -11,11 +11,11 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ListView;
 
-import com.devilwwj.loginandregister.Onboarding.IskWifiManager;
-import com.devilwwj.loginandregister.Onboarding.OnboardingApplication;
-import com.devilwwj.loginandregister.Onboarding.WifiManagerListener;
-import com.devilwwj.loginandregister.R;
-import com.devilwwj.loginandregister.login.utils.LogUtils;
+import com.EMA.AirconControl.Onboarding.IskWifiManager;
+import com.EMA.AirconControl.Onboarding.OnboardingApplication;
+import com.EMA.AirconControl.Onboarding.WifiManagerListener;
+import com.EMA.AirconControl.R;
+import com.EMA.AirconControl.login.utils.LogUtils;
 
 import java.util.List;
 import java.util.Timer;

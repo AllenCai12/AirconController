@@ -14,7 +14,7 @@
  *    OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  ******************************************************************************/
 
-package com.devilwwj.loginandregister.Onboarding;
+package com.EMA.AirconControl.Onboarding;
 
 import android.content.Context;
 import android.database.DataSetObserver;
@@ -25,7 +25,7 @@ import android.widget.ArrayAdapter;
 import android.widget.ListAdapter;
 import android.widget.TextView;
 
-import com.devilwwj.loginandregister.R;
+import com.EMA.AirconControl.R;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -38,6 +38,7 @@ public class DeviceListAdapter extends ArrayAdapter<SoftAPDetails> implements Li
 
     private LayoutInflater m_layoutInflater;
     private final List<SoftAPDetails> m_properties;
+
 
     // ====================================================================
     /**

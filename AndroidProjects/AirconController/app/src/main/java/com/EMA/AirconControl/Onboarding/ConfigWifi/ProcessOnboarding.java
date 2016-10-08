@@ -1,4 +1,4 @@
-package com.devilwwj.loginandregister.Onboarding.ConfigWifi;
+package com.EMA.AirconControl.Onboarding.ConfigWifi;
 
 import android.app.Activity;
 import android.content.BroadcastReceiver;
@@ -9,20 +9,20 @@ import android.content.IntentFilter;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
+import android.util.Log;
 import android.util.Pair;
 import android.widget.ProgressBar;
 
-import com.devilwwj.loginandregister.Onboarding.IskWifiManager;
-import com.devilwwj.loginandregister.Onboarding.Jids;
-import com.devilwwj.loginandregister.Onboarding.Keys;
-import com.devilwwj.loginandregister.Onboarding.OnboardingApplication;
-import com.devilwwj.loginandregister.Onboarding.ScanDeviceActivity;
-import com.devilwwj.loginandregister.Onboarding.SoftAPDetails;
-import com.devilwwj.loginandregister.R;
-import com.devilwwj.loginandregister.login.utils.LogUtils;
-import com.devilwwj.loginandregister.login.utils.SpUtils;
-import com.devilwwj.loginandregister.login.utils.ToastUtils;
-import com.umeng.socialize.utils.Log;
+import com.EMA.AirconControl.Onboarding.IskWifiManager;
+import com.EMA.AirconControl.Onboarding.Jids;
+import com.EMA.AirconControl.Onboarding.Keys;
+import com.EMA.AirconControl.Onboarding.OnboardingApplication;
+import com.EMA.AirconControl.Onboarding.ScanDeviceActivity;
+import com.EMA.AirconControl.Onboarding.SoftAPDetails;
+import com.EMA.AirconControl.R;
+import com.EMA.AirconControl.login.utils.LogUtils;
+import com.EMA.AirconControl.login.utils.SpUtils;
+import com.EMA.AirconControl.login.utils.ToastUtils;
 
 import org.alljoyn.onboarding.OnboardingService.AuthType;
 
@@ -56,7 +56,7 @@ public class ProcessOnboarding extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        setContentView(R.layout.activity_process_onboarding);
+        setContentView(R.layout.activity_process);
         m_progressBar = (ProgressBar)findViewById(R.id.probar);
         m_WifiManager = ((OnboardingApplication)getApplication()).getIskWifiManager();//wif service
         m_application = (OnboardingApplication)getApplication();

@@ -1,4 +1,4 @@
-package com.devilwwj.loginandregister.Onboarding.ConfigWifi;
+package com.EMA.AirconControl.Onboarding.ConfigWifi;
 
 import android.app.Activity;
 import android.content.Context;
@@ -13,7 +13,7 @@ import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
 import android.widget.TextView;
 
-import com.devilwwj.loginandregister.R;
+import com.EMA.AirconControl.R;
 
 public class ConfigWifi extends Activity implements View.OnClickListener {
     private EditText m_wifiText;

@@ -14,7 +14,7 @@
  *    OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  ******************************************************************************/
 
-package com.devilwwj.loginandregister.Onboarding;
+package com.EMA.AirconControl.Onboarding;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -44,7 +44,7 @@ import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
 
-import com.devilwwj.loginandregister.R;
+import com.EMA.AirconControl.R;
 
 import org.alljoyn.onboarding.OnboardingService.AuthType;
 import org.alljoyn.onboarding.transport.MyScanResult;

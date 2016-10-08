@@ -14,7 +14,7 @@
  *    OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  ******************************************************************************/
 
-package com.devilwwj.loginandregister.Onboarding;
+package com.EMA.AirconControl.Onboarding;
 
 import android.app.AlertDialog;
 import android.app.ListActivity;
@@ -30,7 +30,6 @@ import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.view.View.OnCreateContextMenuListener;
 import android.widget.AdapterView.AdapterContextMenuInfo;
 import android.widget.Button;
@@ -38,7 +37,7 @@ import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import com.devilwwj.loginandregister.R;
+import com.EMA.AirconControl.R;
 
 /**
  * The DeviceListActivity displays all the alljoyn devices we are announced on.
@@ -70,7 +69,7 @@ public class DeviceListActivity extends ListActivity implements OnCreateContextM
         m_application = (OnboardingApplication)getApplication();
         /*********************AllJoyn Connect*************************/
 
-        //************** AllJoyn Connect/Disconnect Button ******************
+/*        /*//************** AllJoyn Connect/Disconnect Button ******************
         m_AJConnect = (Button) findViewById(R.id.AllJoynConnect);
         m_AJConnect.setOnClickListener(new OnClickListener() {
 
@@ -85,7 +84,7 @@ public class DeviceListActivity extends ListActivity implements OnCreateContextM
                 }
 
             }
-        });
+        });*/
 
         allJoynConnect();
         //***************** Current Network *********************

@@ -14,7 +14,7 @@
  *    OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  ******************************************************************************/
 
-package com.devilwwj.loginandregister.Onboarding;
+package com.EMA.AirconControl.Onboarding;
 
 
 import android.content.BroadcastReceiver;

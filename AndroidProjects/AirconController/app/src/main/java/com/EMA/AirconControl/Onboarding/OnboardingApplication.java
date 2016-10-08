@@ -14,7 +14,7 @@
  *    OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  ******************************************************************************/
 
-package com.devilwwj.loginandregister.Onboarding;
+package com.EMA.AirconControl.Onboarding;
 
 import android.app.AlertDialog;
 import android.app.Application;
@@ -32,15 +32,15 @@ import android.os.HandlerThread;
 import android.util.Log;
 import android.widget.Toast;
 
-import com.devilwwj.loginandregister.R;
-import com.devilwwj.loginandregister.login.utils.LogUtils;
+import com.EMA.AirconControl.AlljoynClient.AlljoynInterface;
+import com.EMA.AirconControl.R;
+import com.EMA.AirconControl.login.utils.LogUtils;
 
 import org.alljoyn.about.AboutKeys;
 import org.alljoyn.bus.AboutListener;
 import org.alljoyn.bus.AboutObjectDescription;
 import org.alljoyn.bus.BusAttachment;
 import org.alljoyn.bus.BusException;
-import org.alljoyn.bus.BusListener;
 import org.alljoyn.bus.Mutable;
 import org.alljoyn.bus.ProxyBusObject;
 import org.alljoyn.bus.SessionListener;
@@ -68,6 +68,9 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Locale;
 import java.util.Map;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  *
@@ -78,7 +81,7 @@ import java.util.Map;
  */
 public class OnboardingApplication extends Application implements AuthPasswordHandler, AboutListener {
 
-    public static final String TAG = "OnboardingClient";
+    public static final String TAG = "OnboardingApplication";
     public static final String TAG_PASSWORD = "OnboardingApplication_password";
 
     private BusAttachment m_Bus;
@@ -89,17 +92,25 @@ public class OnboardingApplication extends Application implements AuthPasswordHa
     private BroadcastReceiver m_receiver;
     private ConfigService configService;
     private ConfigClient configClient;
+    private Boolean m_isAlljoynConnect = false;
+
+//    private String m_deviceId; //消费者模式的资源
 
     Mutable.IntegerValue m_sessionId;
     private ProxyBusObject m_proxyObj;
-    private AirconInterface m_airconInterface;
+    private AlljoynInterface m_alljoynInterface;
     private static final short CONTACT_PORT=42;
+
+    /*************lock*****************************/
+    private  final Lock lock = new ReentrantLock();
+    //    private  final Condition full = lock.newCondition();
+    private  final Condition connectSucess = lock.newCondition();
     /**
      * The daemon should advertise itself "quietly" (directly to the calling
      * port) This is to reply directly to a TC looking for a daemon
      */
     private static final String DAEMON_QUIET_PREFIX = "quiet@";
-    private static final String[] ANNOUNCEMENT_IFACES = new String[]{ConfigTransport.INTERFACE_NAME,AirconInterface.INTERFACE_NAME};
+    private static final String[] ANNOUNCEMENT_IFACES = new String[]{ConfigTransport.INTERFACE_NAME, AlljoynInterface.INTERFACE_NAME};
     private final GenericLogger m_logger = new GenericLogger() {
         @Override
         public void debug(String TAG, String msg) {
@@ -227,86 +238,6 @@ public class OnboardingApplication extends Application implements AuthPasswordHa
         super.onTerminate();
         unregisterReceiver(m_receiver);
     }
-    public void doConnectTest(){
-
-        /* All communication through AllJoyn begins with a BusAttachment. */
-        boolean b = DaemonInit.PrepareDaemon(getApplicationContext());
-        System.out.println(b);
-        String ss = getPackageName();
-        m_Bus = new BusAttachment(ss, BusAttachment.RemoteMessage.Receive);
-        try {
-            m_Bus.registerBusListener(new BusListener() {
-                @Override
-                public void foundAdvertisedName(String name,
-                                                short transport,
-                                                String namePrefix) {
-                    try {
-
-                        Log.d("++++++++", "======before joinSession====");
-//                        AirconInterface.replyMsg m_msg;
-                        m_Bus.enableConcurrentCallbacks();
-
-                        ProxyBusObject airconProxyObject;
-                        SessionOpts sessionOpts = new SessionOpts();
-                        sessionOpts.traffic = SessionOpts.TRAFFIC_MESSAGES;
-                        sessionOpts.isMultipoint = false;
-                        sessionOpts.proximity = SessionOpts.PROXIMITY_ANY;
-                        sessionOpts.transports = SessionOpts.TRANSPORT_ANY;
-
-                        m_sessionId = new Mutable.IntegerValue();
-
-                        Log.d("++++++++", "======before joinSession====");
-                        m_Bus.joinSession(name, CONTACT_PORT, m_sessionId, sessionOpts, new SessionListener());
-                        airconProxyObject = m_Bus.getProxyBusObject(AirconInterface.INTERFACE_NAME, AirconInterface.OBJ_PATH, m_sessionId.value, new Class[]{AirconInterface.class});
-                        if(airconProxyObject == null)
-                        {
-                            Log.d("ERROR", " proxyObject==================");
-                        }
-                        else{
-                            m_airconInterface  = airconProxyObject.getInterface(AirconInterface.class);
-
-                            if(m_airconInterface == null)
-                            {
-                                Log.d("ERROR", "===========airconInterface=======");
-                            }
-                            else {
-                                Log.d("++++++++", "======after joinSession====");
-
-/*                                m_msg = m_airconInterface.GetAllAirconIDs();
-                                Log.d("++++++++", "======after====");
-                                for (String tmp : m_msg.airconID) {
-                                    Log.d("======", tmp + "  ======");
-                                }*/
-                            }
-
-                        }
-                        // startAirconSession(name, transport, namePrefix);
-                    }catch(Exception e)
-                    {
-                        e.printStackTrace();
-                    }
-
-                }
-            });
-
-        }catch (Exception e)
-        {
-            e.printStackTrace();
-        }
-        Status status = m_Bus.connect();
-        Log.d(TAG, "bus.connect status: " + status);
-
-        status = m_Bus.findAdvertisedName(AirconInterface.INTERFACE_NAME);
-        if (status != Status.OK) {
-            Log.d("ERROR", "=====findAdverTiseName ===========");
-
-        }
-        else
-        {
-            Log.d("OK", "===========findAdvertiseName===status==="+String.valueOf(status));
-        }
-
-    }
 
     // ======================================================================
 
@@ -371,18 +302,36 @@ public class OnboardingApplication extends Application implements AuthPasswordHa
 
         m_Bus.registerAboutListener(this);
         m_Bus.whoImplements(new String[]{OnboardingTransport.INTERFACE_NAME});
+//        waiteForConnectState();
+    }
+
+    private void waiteForConnectState()
+    {
+        lock.lock();
+        try {
+            connectSucess.await();
+        }catch (Exception e)
+        {
+            e.printStackTrace();
+            lock.unlock();
+        }
+        lock.unlock();
+
     }
 
     @Override
     public void announced(String busName, int version, short port, AboutObjectDescription[] objectDescriptions, Map<String, Variant> aboutMap) {
         Map<String, Object> newMap = new HashMap<String, Object>();
         try {
+            m_isAlljoynConnect = true;
             newMap = TransportUtil.fromVariantMap(aboutMap);
             String deviceId = (newMap.get(AboutKeys.ABOUT_APP_ID).toString());
             String deviceFriendlyName = (String) newMap.get(AboutKeys.ABOUT_DEVICE_NAME);
             String defaultLanguage = (String) newMap.get(AboutKeys.ABOUT_DEFAULT_LANGUAGE);
             m_logger.debug(TAG, "onAnnouncement received: with parameters: busName:" + busName + ", port:" + port + ", deviceid" + deviceId + ", deviceName:" + deviceFriendlyName);
             addDevice(deviceId, busName, port, deviceFriendlyName, defaultLanguage, objectDescriptions, newMap);
+            Log.d(TAG, "========"+busName+"======");
+            Log.d(TAG, "========"+deviceFriendlyName+"======");
 
         } catch (BusException e) {
             e.printStackTrace();
@@ -390,6 +339,14 @@ public class OnboardingApplication extends Application implements AuthPasswordHa
     }
 
     // ======================================================================
+
+    /*
+    *is connected with AlljoynService
+    * */
+    public Boolean isConnectWithAlljoyn()
+    {
+        return m_isAlljoynConnect;
+    }
 
     /**
      * Disconnect from Alljoyn bus and unregister bus objects.
@@ -400,6 +357,9 @@ public class OnboardingApplication extends Application implements AuthPasswordHa
          * the bus. Failing to do so could result in a resource leak.
          */
         try {
+            stopConfigSession();
+            endSession();
+
             if (m_Bus != null) {
                 m_Bus.cancelWhoImplements(new String[]{OnboardingTransport.INTERFACE_NAME});
                 m_Bus.unregisterAboutListener(this);
@@ -410,6 +370,8 @@ public class OnboardingApplication extends Application implements AuthPasswordHa
                 m_Bus.disconnect();
                 m_Bus = null;
             }
+            Log.d(TAG, "========stop the alljoyn =======");
+            m_isAlljoynConnect = false;
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -444,13 +406,23 @@ public class OnboardingApplication extends Application implements AuthPasswordHa
             SoftAPDetails sad = new SoftAPDetails(m_Bus, deviceId, busName, deviceFriendlyName, port, objectDescriptions, aboutMap, SrpAnonymousKeyListener.DEFAULT_PINCODE);
             m_devicesMap.put(deviceId, sad);
         }
+
+//        m_deviceId = deviceId;
+
         // notify the activity to come and get it
         Intent intent = new Intent(Keys.Actions.ACTION_DEVICE_FOUND);
         Bundle extras = new Bundle();
         extras.putString(Keys.Extras.EXTRA_DEVICE_ID, deviceId);
         intent.putExtras(extras);
         sendBroadcast(intent);
+
+//        wakeupSignal();
     }
+
+/*    public String getDeviceId()
+    {
+        return m_deviceId;
+    }*/
 
 /*
     essionId = new Mutable.IntegerValue();
@@ -472,45 +444,17 @@ public class OnboardingApplication extends Application implements AuthPasswordHa
 
         m_sessionId = new Mutable.IntegerValue();
 
-        Log.d("++++++++", "======before joinSession====");
+        Log.d(TAG, "======before joinSession====");
         status = m_Bus.joinSession(peer.busName, peer.port, m_sessionId, sessionOpts, new SessionListener());
-
         if(status != Status.OK || status == Status.ALLJOYN_JOINSESSION_REPLY_ALREADY_JOINED)
         {
             LogUtils.d("Faile", "================join========faile==");
+            return null;
         }
 
-        airconProxyObject = m_Bus.getProxyBusObject(peer.busName, AirconInterface.OBJ_PATH, m_sessionId.value, new Class[]{AirconInterface.class});
+        Log.d(TAG, "====join session success====");
+        airconProxyObject = m_Bus.getProxyBusObject(peer.busName, AlljoynInterface.OBJ_PATH, m_sessionId.value, new Class[]{AlljoynInterface.class});
         return  airconProxyObject;
-
-
-/*
-        m_airconInterface  = airconProxyObject.getInterface(AirconInterface.class);
-        int respondCode;
-
-        // m_msg = new AirconInterface.replyMsg();
-
-        String[] tmpStr= new String[4];
-
-        Log.d("++++++++", "======before12====");
-        //version = m_airconInterface.GetControllerServiceVersion();
-
-//                m_airconInterface.GetAllAirconIDs();
-//                m_airconInterface.GetAllAirconID();
-        try {
-            tmpStr =  m_airconInterface.GetAllAirconIDs().airconID;
-//                    m_airconInterface.GetAirconName("1","en");
-        }catch (Exception e){
-            e.printStackTrace();
-            Log.d("remoteMethod", "==========");
-        }
-
-        Log.d("++++++++", "======after====");
-
-        for (String tmp : tmpStr) {
-            Log.d("=sdfsdf=====", tmp + "  ======");
-        }*/
-
     }
 
     /**
@@ -962,6 +906,8 @@ public class OnboardingApplication extends Application implements AuthPasswordHa
             m_logger.info(TAG_PASSWORD, " ** " + authPeer + " successfully authenticated");
     }
     // ======================================================================
+
+
 
 
 }
